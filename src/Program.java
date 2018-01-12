@@ -1,5 +1,11 @@
 
+import java.io.IOException;
+
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+
 import java.util.Random;
 
 
@@ -14,6 +20,38 @@ class Student {
         Oceny = new ArrayList<Integer>();
     }
 
+    public static ArrayList<Student> Zaladuj_z_Pliku(String filepath) throws IOException{
+        ArrayList<Student> studenci = new ArrayList<Student>();
+
+        byte[] dane = Files.readAllBytes(Paths.get(filepath));
+
+        String listaStudentow = new String(dane, StandardCharsets.UTF_8);
+
+        // podziel po znaku nowej linii na poszczególnych studentów
+        String[] studenciZListy = listaStudentow.split("\n");
+
+        for(String s : studenciZListy){
+            String[] daneStudenta = s.split("\\|");
+
+            //index 0 - imie
+            //index 1 - nazwisko
+            //index 2 - oceny rozdzielone przecinkiem
+
+            Student st = new Student(daneStudenta[0], daneStudenta[1]);
+
+            String[] tablicaZnakowOcen = daneStudenta[2].trim().split(",");
+
+            for (int i = 0; i < tablicaZnakowOcen.length; i++){
+                int ocena = Integer.parseInt(tablicaZnakowOcen[i]);
+                st.Oceny.add(ocena);
+            }
+
+            studenci.add(st);
+
+        }
+
+        return studenci;
+    }
 }
 
 class Dziennik {
@@ -26,26 +64,13 @@ class Dziennik {
 
 public class Program {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
         Random random = new Random();
 
         Dziennik dziennik = new Dziennik();
 
-        dziennik.Studenci.add(new Student("Tomasz", "Testowy"));
-        dziennik.Studenci.add(new Student("Maciek", "Malicki"));
-        dziennik.Studenci.add(new Student("Liwia", "Igowska"));
-
-        for(Student student_z_listy : dziennik.Studenci) {
-            // losuje od 5 do 15 ocen
-            int ilosc_ocen = random.nextInt(10) + 5;
-
-            for (int i = 0; i < ilosc_ocen; i++) {
-                //losowanie ocen
-                int ocena = random.nextInt(5) + 1;
-                student_z_listy.Oceny.add(ocena);
-            }
-        }
+        dziennik.Studenci = Student.Zaladuj_z_Pliku(args[0]);
 
         for(Student student_z_listy : dziennik.Studenci) {
             wypisz_dane(student_z_listy);
